@@ -29,7 +29,9 @@ function usage(state,help)
     p=table.join(state.prefix," ").." " end
   local a=""
   if state and state.alt and #state.alt>0 then
-    a="|"..table.join(state.alt,"|") end
+    if help and #help>0 then a="|" end
+    a=a..table.join(state.alt,"|")
+  end
   if help:match(" ") and #a>0 then help="("..help..")" end
   out("-ERR Usage: "..p..help..a.."\n")
 end
@@ -53,7 +55,7 @@ function cmd_dispatch(cmd_tree,argv)
     if i==2 and not x and not rem then
       return usage({},table.join(table.keys(node,"|")))
     elseif not x and rem then
-      return usage(state,table.join(table.keys(rem),"|"))
+      return usage(state,"")
     elseif x and type(x) == "function" then
       return x(state,table.unpack(argl))
     elseif x and type(x) == "table" then
