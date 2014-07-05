@@ -53,7 +53,7 @@ function cmd_dispatch(cmd_tree,argv)
     local x,rem,node = tree.get(cmd_tree, cmd)
     local state={prefix=cmd,alt=table.keys(rem)}
     if i==2 and not x and not rem then
-      return usage({},table.join(table.keys(node,"|")))
+      return usage({},table.join(table.keys(node),"|"))
     elseif not x and rem then
       return usage(state,"")
     elseif x and type(x) == "function" then
