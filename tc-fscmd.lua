@@ -23,11 +23,13 @@ require "tc-util"
 local out
 if stream then out=function(x) stream:write(x) end else out=print end
 
-function usage(prefix,alt,help)
+function usage(state,help)
   local p=""
-  if prefix then p=table.join(prefix," ").." " end
+  if state and state.prefix then
+    p=table.join(state.prefix," ").." " end
   local a=""
-  if alt and #alt>0 then a="|"..table.join(alt,"|") end
+  if state and state.alt and #state.alt>0 then
+    a="|"..table.join(state.alt,"|") end
   if help:match(" ") and #a>0 then help="("..help..")" end
   out("-ERR Usage: "..p..help..a.."\n")
 end
@@ -46,37 +48,36 @@ function cmd_dispatch(cmd_tree,argv)
   if #argv == 0 then argv={""} end
   for i=#argv+1,2,-1 do
     local cmd,argl = table.splice(argv,i)
-    local prefix=cmd
     local x,rem,node = tree.get(cmd_tree, cmd)
-    local alt=table.keys(rem)
+    local state={prefix=cmd,alt=table.keys(rem)}
     if i==2 and not x and not rem then
-      return usage(nil,nil,table.join(table.keys(node,"|")))
+      return usage({},table.join(table.keys(node,"|")))
     elseif not x and rem then
-      return usage(prefix,nil,table.join(table.keys(rem),"|"))
+      return usage(state,table.join(table.keys(rem),"|"))
     elseif x and type(x) == "function" then
-      return x(prefix,alt,table.unpack(argl))
+      return x(state,table.unpack(argl))
     elseif x and type(x) == "table" then
       local validate=x[2]
       if validate then
         if type(validate) ~= "function" then
           return err("internal error; expected validator")
         end
-        if not validate(prefix,alt,table.unpack(argl)) then return end
+        if not validate(state,table.unpack(argl)) then return end
       end
       local fn=x[1]
       if not fn or type(fn) ~= "function" then
         return err("internal error; expected function")
       end
-      return fn(prefix,alt,table.unpack(argl))
+      return fn(state,table.unpack(argl))
     end
   end
 end
 
 function make_validator(nrequired,help)
-  return function(prefix,alt,...)
+  return function(state,...)
     local rest={...}
     if #rest<nrequired then
-      return usage(prefix,alt,help)
+      return usage(state,help)
     end
     return true
   end
