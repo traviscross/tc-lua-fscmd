@@ -54,20 +54,20 @@ function cmd_dispatch(cmd_tree,argv)
     elseif not x and rem then
       return usage(prefix,nil,table.join(table.keys(rem),"|"))
     elseif x and type(x) == "function" then
-      return x(prefix,alt,unpack(argl))
+      return x(prefix,alt,table.unpack(argl))
     elseif x and type(x) == "table" then
       local validate=x[2]
       if validate then
         if type(validate) ~= "function" then
           return err("internal error; expected validator")
         end
-        if not validate(prefix,alt,unpack(argl)) then return end
+        if not validate(prefix,alt,table.unpack(argl)) then return end
       end
       local fn=x[1]
       if not fn or type(fn) ~= "function" then
         return err("internal error; expected function")
       end
-      return fn(prefix,alt,unpack(argl))
+      return fn(prefix,alt,table.unpack(argl))
     end
   end
 end
