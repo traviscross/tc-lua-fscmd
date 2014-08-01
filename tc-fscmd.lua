@@ -48,11 +48,11 @@ end
 
 function cmd_dispatch(cmd_tree,argv)
   if #argv == 0 then argv={""} end
-  for i=#argv+1,2,-1 do
+  for i=#argv,1,-1 do
     local cmd,argl = table.splice(argv,i)
     local x,rem,node = tree.get(cmd_tree, cmd)
     local state={prefix=cmd,alt=table.keys(rem)}
-    if i==2 and not x and not rem then
+    if i==1 and not x and not rem then
       return usage({},table.join(table.keys(node),"|"))
     elseif not x and rem then
       return usage(state,"")
